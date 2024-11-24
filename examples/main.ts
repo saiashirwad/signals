@@ -1,46 +1,5 @@
-import { Computed, Signal, computed, createEffect, createSignal } from '../src'
-
-const identity = <T>(value: T) => value
-
-function bindText<T>(
-	element: HTMLDivElement | HTMLSpanElement | HTMLParagraphElement,
-	signal: Signal<T> | Computed<T>,
-	decode: (value: T) => string,
-) {
-	createEffect(() => {
-		element.textContent = decode(signal.get())
-	})
-}
-
-function onEvent(
-	element: Element,
-	event: keyof HTMLElementEventMap,
-	handler: (e: Event) => void,
-) {
-	element.addEventListener(event, handler)
-	return () => {
-		element.removeEventListener(event, handler)
-	}
-}
-
-function bindEvent<T>(_: {
-	event: keyof HTMLElementEventMap
-	signal: Signal<T>
-	element: Element
-	decode: (value: T) => string
-	encode: (value: string) => T
-}) {
-	onEvent(_.element, _.event, (e) => {
-		_.signal.set(_.encode((e.target as HTMLInputElement).value))
-	})
-	createEffect(() => {
-		if ('value' in _.element) {
-			_.element.value = _.decode(_.signal.get())
-		} else if ('textContent' in _.element) {
-			_.element.textContent = _.decode(_.signal.get())
-		}
-	})
-}
+import { computed, createEffect, createSignal } from '../src'
+import { bindEvent } from '../src/events'
 
 const inputEl = document.querySelector<HTMLInputElement>('#input')!
 const inputSignal = createSignal('')
