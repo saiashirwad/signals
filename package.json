@@ -2,17 +2,17 @@
   "name": "@texoport/signals",
   "type": "module",
   "version": "0.0.0",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "description": "",
   "exports": {
-    "types": "./dist/index.d.ts",
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
-    "build": "bun run build.ts",
+    "build": "bun run build.ts && tsc",
     "prepublishOnly": "bun run build"
   },
   "files": [
@@ -32,7 +32,6 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/bun": "^1.1.10",
-    "bun-plugin-dts": "^0.3.0",
     "typescript": "^5.7.2"
   }
 }
