@@ -1,77 +1,68 @@
-import { computed, createEffect, createSignal } from '../src'
+import { Computed, Signal, computed, createEffect, createSignal } from '../src'
 
-const inputEl = document.getElementById('input') as HTMLInputElement
-// const outputEl = document.getElementById('output') as HTMLDivElement
-// const duplicatedOutputEl = document.getElementById(
-// 	'duplicated-output',
-// ) as HTMLDivElement
-// const duplicatedOutput2El = document.getElementById(
-// 	'duplicated-output-2',
-// ) as HTMLDivElement
+const identity = <T>(value: T) => value
 
-// function bindText<T>(
-// 	element: HTMLDivElement | HTMLSpanElement | HTMLParagraphElement,
-// 	signal: Signal<T> | Computed<T>,
-// 	decode: (value: T) => string,
-// ) {
-// 	createEffect(() => {
-// 		element.textContent = decode(signal.get())
-// 	})
-// }
+function bindText<T>(
+	element: HTMLDivElement | HTMLSpanElement | HTMLParagraphElement,
+	signal: Signal<T> | Computed<T>,
+	decode: (value: T) => string,
+) {
+	createEffect(() => {
+		element.textContent = decode(signal.get())
+	})
+}
 
-// function onEvent(
-// 	element: Element,
-// 	event: keyof HTMLElementEventMap,
-// 	handler: (e: Event) => void,
-// ) {
-// 	element.addEventListener(event, handler)
-// 	return () => {
-// 		element.removeEventListener(event, handler)
-// 	}
-// }
+function onEvent(
+	element: Element,
+	event: keyof HTMLElementEventMap,
+	handler: (e: Event) => void,
+) {
+	element.addEventListener(event, handler)
+	return () => {
+		element.removeEventListener(event, handler)
+	}
+}
 
-// function bindEvent<T>(
-// 	element: Element,
-// 	signal: Signal<T>,
-// 	event: keyof HTMLElementEventMap,
-// 	decode: (value: T) => string,
-// 	encode: (value: string) => T,
-// ) {
-// 	onEvent(element, event, (e) => {
-// 		signal.set(encode((e.target as HTMLInputElement).value))
-// 	})
-// 	createEffect(() => {
-// 		if ('value' in element) {
-// 			element.value = decode(signal.get())
-// 		} else if ('textContent' in element) {
-// 			element.textContent = decode(signal.get())
-// 		}
-// 	})
-// }
+function bindEvent<T>(_: {
+	event: keyof HTMLElementEventMap
+	signal: Signal<T>
+	element: Element
+	decode: (value: T) => string
+	encode: (value: string) => T
+}) {
+	onEvent(_.element, _.event, (e) => {
+		_.signal.set(_.encode((e.target as HTMLInputElement).value))
+	})
+	createEffect(() => {
+		if ('value' in _.element) {
+			_.element.value = _.decode(_.signal.get())
+		} else if ('textContent' in _.element) {
+			_.element.textContent = _.decode(_.signal.get())
+		}
+	})
+}
 
+const inputEl = document.querySelector<HTMLInputElement>('#input')!
 const inputSignal = createSignal('')
-inputEl.addEventListener('input', (e) => {
-	inputSignal.set((e.target as HTMLInputElement).value)
-})
 
-// bindEvent(
-// 	inputEl,
-// 	inputSignal,
-// 	'input',
-// 	(value) => value,
-// 	(value) => value,
-// )
-
-createEffect(() => {
-	console.log('inputSignal', inputSignal.get())
+bindEvent({
+	event: 'input',
+	element: inputEl,
+	signal: inputSignal,
+	decode: (x) => x,
+	encode: (x) => x,
 })
 
 const duplicatedInput = computed(() => {
 	const input = inputSignal.get()
+	console.log('duplicatedInput', `${input}${input}`)
 	return `${input}${input}`
 })
 
-const length = computed(() => duplicatedInput.get().length)
+const length = computed(() => {
+	console.log('length', duplicatedInput.get().length)
+	return duplicatedInput.get().length
+})
 
 createEffect(() => {
 	const currentLength = length.get()
@@ -79,7 +70,3 @@ createEffect(() => {
 	console.log({ length: currentLength })
 	console.log({ duplicatedInput: currentDuplicated })
 })
-
-// bindText(outputEl, duplicatedInput, (value) => value)
-// bindText(duplicatedOutputEl, duplicatedInput, (value) => value)
-// bindText(duplicatedOutput2El, duplicatedInput, (value) => value)

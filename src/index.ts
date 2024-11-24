@@ -107,6 +107,7 @@ export function computed<T>(computeFn: () => T): Computed<T> {
 	let cachedValue: T
 
 	createEffect(() => {
+		console.log('computeFn')
 		cachedValue = computeFn()
 	})
 
