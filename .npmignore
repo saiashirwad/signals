@@ -3,3 +3,7 @@
 !package.json
 !README.md
 !LICENSE 
+examples/index.html
+examples/main.ts
+examples/dist
+vite.config.ts 

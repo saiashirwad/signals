@@ -15,6 +15,7 @@
     "build": "bun run build.ts && tsc",
     "prepublishOnly": "bun run build && bun test",
     "test": "bun test",
+    "examples:dev": "vite",
     "publish:patch": "npm version patch && npm publish --access public",
     "publish:minor": "npm version minor && npm publish --access public",
     "publish:major": "npm version major && npm publish --access public",
@@ -39,6 +40,9 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/bun": "^1.1.10",
-    "typescript": "^5.7.2"
+    "@types/react": "^18.3.12",
+    "react": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
   }
 }

@@ -22,6 +22,10 @@ export type Computed<T> = {
 	get(): T
 }
 
+export type LazyComputed<T> = {
+	get(): T
+}
+
 export function createSignal<T>(initialValue: T): Signal<T> {
 	let value = initialValue
 	const listeners = new Set<Effect>()
@@ -113,7 +117,7 @@ export function computed<T>(computeFn: () => T): Computed<T> {
 	}
 }
 
-export function lazyComputed<T>(computeFn: () => T): Computed<T> {
+export function lazyComputed<T>(computeFn: () => T): LazyComputed<T> {
 	let cachedValue: T
 	let needsUpdate = true
 

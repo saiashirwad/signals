@@ -1,9 +1,4 @@
-import {
-	computed,
-	createEffect,
-	createSignal,
-	lazyComputed,
-} from '../src/index'
+import { computed, createEffect, createSignal, lazyComputed } from '../src'
 
 const count = createSignal(0)
 
