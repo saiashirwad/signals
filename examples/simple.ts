@@ -1,7 +1,21 @@
-import { createEffect, createSignal, lazy } from '../src/index'
+import {
+	computed,
+	createEffect,
+	createSignal,
+	lazyComputed,
+} from '../src/index'
 
 const count = createSignal(0)
-const doubled = lazy(() => count.get() * 2)
+
+const doubled = computed(() => {
+	console.log('Computing doubled')
+	return count.get() * 2
+})
+
+const doubledLazy = lazyComputed(() => {
+	console.log('Computing doubledLazy')
+	return count.get() * 2
+})
 
 createEffect(() => {
 	console.log('count is: ', count.get())
@@ -11,6 +25,12 @@ createEffect(() => {
 	console.log('doubled is: ', doubled.get())
 })
 
+createEffect(() => {
+	console.log('count changed but doubledLazy not accessed')
+})
+
 count.set(0)
 count.set(1)
 count.set(20)
+
+console.log('finally accessing doubledLazy:', doubledLazy.get())

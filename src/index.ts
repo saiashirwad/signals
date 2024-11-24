@@ -105,28 +105,27 @@ export function createEffect(effect: EffectFn) {
 
 export function computed<T>(computeFn: () => T): Computed<T> {
 	let cachedValue: T
-	let dirty = true
 
 	createEffect(() => {
 		cachedValue = computeFn()
-		dirty = true
 	})
 
 	return {
 		get() {
-			if (dirty) {
-				cachedValue = computeFn()
-			}
 			return cachedValue
 		},
 	}
 }
 
-export function lazy<T>(computeFn: () => T): Computed<T> {
+export function lazyComputed<T>(computeFn: () => T): Computed<T> {
 	let cachedValue: T
 	let needsUpdate = true
 
-	const derivedSignal = {
+	createEffect(() => {
+		needsUpdate = true
+	})
+
+	return {
 		get() {
 			if (needsUpdate) {
 				cachedValue = computeFn()
@@ -135,11 +134,4 @@ export function lazy<T>(computeFn: () => T): Computed<T> {
 			return cachedValue
 		},
 	}
-
-	createEffect(() => {
-		computeFn()
-		needsUpdate = true
-	})
-
-	return derivedSignal
 }
