@@ -15,7 +15,6 @@ await Promise.all([
   }),
   Bun.build({
     ...defaultBuildConfig,
-    format: 'cjs',
-    naming: "[dir]/[name].cjs",
+    format: 'esm',
   })
 ])
