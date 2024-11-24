@@ -1,13 +1,14 @@
 export type EffectFn = () => void
 
+export const a = 2
+
 export interface Effect extends EffectFn {
 	deps: Set<Set<Effect>>
-	dispose(): void
 }
 
 let activeEffectStack: Effect[] = []
 let batching = false
-let batchedUpdates = new Set<Effect>()
+const batchedUpdates = new Set<Effect>()
 
 export type Signal<T> = {
 	get(): T
@@ -27,7 +28,7 @@ export function createSignal<T>(initialValue: T): Signal<T> {
 	let value = initialValue
 	const listeners = new Set<Effect>()
 
-	const signal = {
+	return {
 		get() {
 			if (activeEffectStack.length > 0) {
 				const activeEffect = activeEffectStack.at(-1)!
@@ -53,8 +54,6 @@ export function createSignal<T>(initialValue: T): Signal<T> {
 			}
 		},
 	}
-
-	return signal
 }
 
 function batch(updateFn: () => void) {
@@ -86,7 +85,6 @@ export function cleanup(effect: Effect) {
 
 export function createEffect(effect: EffectFn) {
 	const wrappedEffect = (() => {
-		const prevDeps = wrappedEffect.deps
 		wrappedEffect.deps = new Set()
 
 		activeEffectStack.push(wrappedEffect)

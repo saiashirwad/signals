@@ -9,7 +9,9 @@ const count = createSignal(0)
 
 const doubled = computed(() => {
 	console.log('Computing doubled')
-	return count.get() * 2
+	const result = count.get() * 2
+	console.log('Doubled is: ', result)
+	return result
 })
 
 const doubledLazy = lazyComputed(() => {
