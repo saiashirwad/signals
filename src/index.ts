@@ -1,23 +1,25 @@
-type EffectFn = () => void
+export type EffectFn = () => void
 
-interface Effect extends EffectFn {
+export interface Effect extends EffectFn {
 	deps: Set<Set<Effect>>
+	dispose(): void
 }
 
 let activeEffectStack: Effect[] = []
 let batching = false
 let batchedUpdates = new Set<Effect>()
 
-type Signal<T> = {
+export type Signal<T> = {
 	get(): T
 	set(newValue: T): void
+	dispose(): void
 	debug(): {
 		value: T
 		listeners: Effect[]
 	}
 }
 
-type Computed<T> = {
+export type Computed<T> = {
 	get(): T
 }
 
@@ -41,6 +43,9 @@ export function createSignal<T>(initialValue: T): Signal<T> {
 				listeners.forEach((listener) => listener())
 			})
 		},
+		dispose() {
+			listeners.clear()
+		},
 		debug() {
 			return {
 				value,
@@ -54,7 +59,10 @@ export function createSignal<T>(initialValue: T): Signal<T> {
 
 function batch(updateFn: () => void) {
 	if (batching) {
+		const prevStack = activeEffectStack
+		activeEffectStack = []
 		updateFn()
+		activeEffectStack = prevStack
 	} else {
 		batching = true
 		try {
@@ -68,7 +76,6 @@ function batch(updateFn: () => void) {
 }
 
 export function cleanup(effect: Effect) {
-	console.log('cleanup')
 	if (effect.deps) {
 		for (const dep of effect.deps) {
 			dep.delete(effect)
@@ -84,14 +91,10 @@ export function createEffect(effect: EffectFn) {
 
 		activeEffectStack.push(wrappedEffect)
 		try {
+			cleanup(wrappedEffect)
 			effect()
 		} finally {
 			activeEffectStack.pop()
-			if (prevDeps) {
-				for (const dep of prevDeps) {
-					dep.delete(wrappedEffect)
-				}
-			}
 		}
 	}) as Effect
 
@@ -105,7 +108,7 @@ export function computed<T>(computeFn: () => T): Computed<T> {
 	let dirty = true
 
 	createEffect(() => {
-		computeFn()
+		cachedValue = computeFn()
 		dirty = true
 	})
 
@@ -113,7 +116,6 @@ export function computed<T>(computeFn: () => T): Computed<T> {
 		get() {
 			if (dirty) {
 				cachedValue = computeFn()
-				dirty = false
 			}
 			return cachedValue
 		},
