@@ -1,7 +1,7 @@
 {
   "name": "@texoport/signals",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "description": "",
@@ -13,7 +13,14 @@
   },
   "scripts": {
     "build": "bun run build.ts && tsc",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build && bun test",
+    "test": "bun test",
+    "publish:patch": "npm version patch && npm publish --access public",
+    "publish:minor": "npm version minor && npm publish --access public",
+    "publish:major": "npm version major && npm publish --access public",
+    "release:patch": "bun run build && bun test && bun run publish:patch",
+    "release:minor": "bun run build && bun test && bun run publish:minor",
+    "release:major": "bun run build && bun test && bun run publish:major"
   },
   "files": [
     "dist"
