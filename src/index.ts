@@ -1,7 +1,5 @@
 export type EffectFn = () => void
 
-export const a = 2
-
 export interface Effect extends EffectFn {
 	deps: Set<Set<Effect>>
 }
