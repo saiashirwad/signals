@@ -24,8 +24,9 @@ export interface Effect extends EffectFn {
  *
  * Why we need this:
  * When a signal is read inside an effect, the effect will re-run when the signal's value changes.
- * But if we are inside a nested effect, we want to track the dependencies of the nested effect, not the parent.
- * This stack lets us know which effect is currently running, so we can add the correct dependencies.
+ * But if we are inside a nested effect, we want to track the dependencies of the nested effect,
+ * not the parent.  This stack lets us know which effect is currently running, so we can
+ * add the correct dependencies.
  *
  * @internal
  */
@@ -109,14 +110,11 @@ export type LazyComputed<T> = {
  * @returns A new signal.
  */
 export function createSignal<T>(initialValue: T): Signal<T> {
-	// Store the current value of the signal
 	let value = initialValue
-	// Set of effects that depend on this signal's value
 	const listeners = new Set<Effect>()
 
 	return {
 		get() {
-			// If there is an active effect, add this signal as a dependency
 			if (activeEffectStack.length > 0) {
 				const activeEffect = activeEffectStack.at(-1)!
 				listeners.add(activeEffect)
@@ -148,7 +146,7 @@ export function createSignal<T>(initialValue: T): Signal<T> {
  * @param updateFn The function to execute within the batch.
  * @example
  * ```typescript
- * createSignal(1);
+ * const count = createSignal(1);
  * batch(() => {
  *  	count.set(count.get() + 1);
  *  	count.set(count.get() + 1);
@@ -175,12 +173,19 @@ export function batch(updateFn: () => void) {
 	try {
 		updateFn()
 	} finally {
+		// Run all listeners that were queued during the batch
 		batchedUpdates.forEach((listener) => listener())
+		// Clear the batchedUpdates set so that it can be reused
 		batchedUpdates.clear()
+		// Turn off batching
 		batching = false
 	}
 }
 
+/**
+ * Removes the effect from the dependencies of all signals it depends on.
+ * @param effect The effect to clean up.
+ */
 export function cleanup(effect: Effect) {
 	if (effect.deps) {
 		for (const dep of effect.deps) {
@@ -190,8 +195,14 @@ export function cleanup(effect: Effect) {
 	}
 }
 
+/**
+ * Creates an effect that will run the provided function when its dependencies change.
+ * @param effect The function to run when the dependencies change.
+ * @returns The effect.
+ */
 export function createEffect(effect: EffectFn) {
 	const wrappedEffect = (() => {
+		// The deps set tracks the signals that the effect depends on
 		wrappedEffect.deps = new Set()
 		activeEffectStack.push(wrappedEffect)
 		try {
@@ -202,22 +213,29 @@ export function createEffect(effect: EffectFn) {
 		}
 	}) as Effect
 
+	// TODO: check if i actually need this
 	// wrappedEffect.deps = new Set()
 	wrappedEffect()
 	return wrappedEffect
 }
 
+/**
+ * Creates a computed value that will be updated when its dependencies change.
+ * @param computeFn The function that computes the value.
+ * @returns A computed value (a derived signal).
+ */
 export function computed<T>(computeFn: () => T): Computed<T> {
 	let cachedValue: T
-	let effect: Effect
-
-	effect = createEffect(() => {
+	// The effect that will run the computeFn and update the cachedValue
+	const effect: Effect = createEffect(() => {
 		cachedValue = computeFn()
 	})
 
 	return {
 		get() {
+			// If there is an active effect, add this computed as a dependency
 			if (activeEffectStack.length > 0) {
+				// The active effect is the one that will be registered as a dependency
 				const activeEffect = activeEffectStack.at(-1)!
 				effect.deps.forEach((dep) => {
 					dep.add(activeEffect)
