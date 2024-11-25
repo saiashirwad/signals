@@ -143,3 +143,34 @@ for (let i = 0; i < 3; i++) {
 }
 
 ```
+
+
+## goal API 
+```typescript
+function Counter() {
+	const search$ = createSignal('')
+  const count$ = createSignal(0)
+
+	return $.div('p-4', [ 
+	  $.div(["hi"]),
+	  $.p(["wtf lol"]),
+	  $.p('text-gray-800', {}, ["hi"]),
+    $.input('border border-gray-200 rounded', {
+		  value: count$,
+			onInput: (e) => {
+			  count.set()
+			},
+		}),
+    $.input({
+		  value: search$
+		}),
+	  $.button('p2 border rounded-md border-gray-200', { click: () => {
+		  count$.update(c => c - 1)
+		} }, ["-"]),
+		count$,
+	  $.button('p2 border rounded-md border-gray-200', { click: () => {
+		  count$.update(c => c + 1)
+		} }, ["+"]),
+	])
+}
+```
