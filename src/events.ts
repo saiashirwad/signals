@@ -16,6 +16,25 @@ export function bindText<T>(
 	})
 }
 
+export function bindHTML<T>(
+	element: Element,
+	signal: Signal<T> | Computed<T>,
+	decode: (value: T) => Element,
+) {
+	let currentElement = element
+	createEffect(() => {
+		const newElement = decode(signal.get())
+		currentElement.replaceWith(newElement)
+		currentElement = newElement
+	})
+}
+
+export function bindList<T>(
+	parent: Element,
+	signal: Signal<T[]> | Computed<T[]>,
+	decode: (value: T) => string,
+) {}
+
 /**
  * Adds an event listener to an element and returns a cleanup function
  * @param element The element to add the event listener to
@@ -47,17 +66,19 @@ export function bind<T>(
 	event: keyof HTMLElementEventMap,
 	signal: Signal<T>,
 	element: Element,
-	decode: (value: T) => string,
-	encode: (value: string) => T,
+	decode?: (value: T) => string,
+	encode?: (value: string) => T,
 ) {
+	const _decode = decode ?? ((x: T) => x as string)
+	const _encode = encode ?? ((x: string) => x as T)
 	onEvent(element, event, (e) => {
-		signal.set(encode((e.target as HTMLInputElement).value))
+		signal.set(_encode((e.target as HTMLInputElement).value))
 	})
 	createEffect(() => {
 		if ('value' in element) {
-			element.value = decode(signal.get())
+			element.value = _decode(signal.get())
 		} else if ('textContent' in element) {
-			element.textContent = decode(signal.get())
+			element.textContent = _decode(signal.get())
 		}
 	})
 }
