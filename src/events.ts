@@ -32,8 +32,49 @@ export function bindHTML<T>(
 export function bindList<T>(
 	parent: Element,
 	signal: Signal<T[]> | Computed<T[]>,
-	decode: (value: T) => string,
-) {}
+	decode: (value: T) => Element,
+) {
+	let currentElements: Element[] = []
+	createEffect(() => {
+		const newElements = signal.get().map(decode)
+		const diff = arrayDiff(currentElements, newElements)
+		diff.forEach((item) => {
+			if (item.type === 'added') {
+				parent.appendChild(item.element)
+			} else if (item.type === 'removed') {
+				parent.removeChild(item.element)
+			} else {
+				item.element.replaceWith(item.element)
+			}
+		})
+		currentElements = newElements
+	})
+}
+
+interface DiffItem<T> {
+	type: 'added' | 'removed' | 'updated'
+	element: Element
+}
+
+function arrayDiff<T>(oldArray: T[], newArray: T[]): DiffItem<T>[] {
+	const diff: DiffItem<T>[] = []
+	const oldSet = new Set(oldArray)
+	const newSet = new Set(newArray)
+
+	oldArray.forEach((item, index) => {
+		if (!newSet.has(item)) {
+			diff.push({ type: 'removed', element: item as unknown as Element })
+		}
+	})
+
+	newArray.forEach((item, index) => {
+		if (!oldSet.has(item)) {
+			diff.push({ type: 'added', element: item as unknown as Element })
+		}
+	})
+
+	return diff
+}
 
 /**
  * Adds an event listener to an element and returns a cleanup function

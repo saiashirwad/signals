@@ -1,16 +1,5 @@
-import { batch, createSignal, computed, createEffect } from '../src'
-import { bind, bindHTML } from '../src/events'
-
-const app = document.querySelector<HTMLDivElement>('#app')!
-app.innerHTML = `
-	<div>
-		<input id="input" placeholder="Enter Todo" />
-		<div id="list"></div>
-	</div>
-`
-
-const input = document.getElementById('input')!
-const todoList = document.getElementById('list')!
+import { batch, createEffect, createSignal } from '../src'
+import { bind, bindList } from '../src/events'
 
 type Todo = {
 	id: number
@@ -18,27 +7,24 @@ type Todo = {
 	status: boolean
 }
 
-const input$ = createSignal('')
-const todoList$ = createSignal<Todo[]>([])
-let nextId = 0
+function createTodoList(parentElement: Element) {
+	const div = document.createElement('div')
+	const input = document.createElement('input')
+	input.placeholder = 'Enter Todo'
+	const todoList = document.createElement('div')
 
-bind('input', input$, input)
+	const input$ = createSignal('')
+	const todoList$ = createSignal<Todo[]>([])
+	let nextId = 0
 
-bindHTML(todoList, todoList$, (todos) => {
-	const container = document.createElement('div')
+	bind('input', input$, input)
 
-	todos.forEach((todo) => {
-		const todoState$ = computed(() => {
-			const allTodos = todoList$.get()
-			return allTodos.find((t) => t.id === todo.id)!
-		})
-
+	bindList(todoList, todoList$, (todo) => {
 		const todoEl = document.createElement('div')
 
 		createEffect(() => {
-			const currentTodo = todoState$.get()
-			todoEl.innerText = currentTodo.text
-			todoEl.style.textDecoration = currentTodo.status ? 'line-through' : 'none'
+			todoEl.innerText = todo.text
+			todoEl.style.textDecoration = todo.status ? 'line-through' : 'none'
 		})
 
 		todoEl.addEventListener('click', () => {
@@ -49,25 +35,36 @@ bindHTML(todoList, todoList$, (todos) => {
 			todoList$.set(updatedTodos)
 		})
 
-		container.appendChild(todoEl)
+		todoList.appendChild(todoEl)
+
+		return todoEl
 	})
 
-	return container
-})
+	input.addEventListener('keydown', (e) => {
+		if (e.key === 'Enter') {
+			const todos = todoList$.get()
+			batch(() => {
+				todoList$.set([
+					...todos,
+					{
+						id: nextId++,
+						status: false,
+						text: input$.get(),
+					},
+				])
+				input$.set('')
+			})
+		}
+	})
 
-input.addEventListener('keydown', (e) => {
-	if (e.key === 'Enter') {
-		const todos = todoList$.get()
-		batch(() => {
-			todoList$.set([
-				...todos,
-				{
-					id: nextId++,
-					status: false,
-					text: input$.get(),
-				},
-			])
-			input$.set('')
-		})
-	}
-})
+	div.appendChild(input)
+	div.appendChild(todoList)
+	parentElement.appendChild(div)
+}
+
+const app = document.querySelector<HTMLDivElement>('#app')!
+for (let i = 0; i < 3; i++) {
+	const div = document.createElement('div')
+	createTodoList(div)
+	app.appendChild(div)
+}
