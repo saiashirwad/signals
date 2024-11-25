@@ -1,31 +1,28 @@
-import { computed, createEffect, createSignal } from '../src'
-import { bindEvent } from '../src/events'
+import { createEffect, createSignal, computed, lazyComputed } from '../src'
+import { bind } from '../src/events'
 
 const inputEl = document.querySelector<HTMLInputElement>('#input')!
+const input2El = document.querySelector<HTMLInputElement>('#input-2')!
+const lenEl = document.querySelector<HTMLDivElement>('#len')!
+
 const inputSignal = createSignal('')
 
-bindEvent({
-	event: 'input',
-	element: inputEl,
-	signal: inputSignal,
-	decode: (x) => x,
-	encode: (x) => x,
-})
+bind(
+	'input',
+	inputSignal,
+	inputEl,
+	(x) => x,
+	(x) => x,
+)
 
-const duplicatedInput = computed(() => {
-	const input = inputSignal.get()
-	console.log('duplicatedInput', `${input}${input}`)
-	return `${input}${input}`
-})
-
-const length = computed(() => {
-	console.log('length', duplicatedInput.get().length)
-	return duplicatedInput.get().length
-})
+bind(
+	'input',
+	inputSignal,
+	input2El,
+	(x) => x,
+	(x) => x,
+)
 
 createEffect(() => {
-	const currentLength = length.get()
-	const currentDuplicated = duplicatedInput.get()
-	console.log({ length: currentLength })
-	console.log({ duplicatedInput: currentDuplicated })
+	lenEl.textContent = inputSignal.get().length.toString()
 })
