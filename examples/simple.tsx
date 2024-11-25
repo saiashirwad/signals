@@ -1,4 +1,4 @@
-import { batch, computed, createEffect, createSignal } from '../src'
+import { computed, createEffect, createSignal } from '../src'
 
 const count = createSignal(0)
 

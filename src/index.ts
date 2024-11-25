@@ -213,7 +213,7 @@ export function createEffect(effect: EffectFn) {
 		}
 	}) as Effect
 
-	// TODO: check if i actually need this
+	// NOTE: I don't think I need this
 	// wrappedEffect.deps = new Set()
 	wrappedEffect()
 	return wrappedEffect
@@ -247,28 +247,28 @@ export function computed<T>(computeFn: () => T): Computed<T> {
 	}
 }
 
-export function lazyComputed<T>(computeFn: () => T): LazyComputed<T> {
-	let cachedValue: T
-	let needsUpdate = true
+// export function lazyComputed<T>(computeFn: () => T): LazyComputed<T> {
+// 	let cachedValue: T
+// 	let needsUpdate = true
 
-	let effect = createEffect(() => {
-		needsUpdate = true
-	})
+// 	let effect = createEffect(() => {
+// 		needsUpdate = true
+// 	})
 
-	return {
-		get() {
-			if (activeEffectStack.length > 0) {
-				const activeEffect = activeEffectStack.at(-1)!
-				effect.deps.forEach((dep) => {
-					dep.add(activeEffect)
-					activeEffect.deps.add(dep)
-				})
-			}
-			if (needsUpdate) {
-				cachedValue = computeFn()
-				needsUpdate = false
-			}
-			return cachedValue
-		},
-	}
-}
+// 	return {
+// 		get() {
+// 			if (activeEffectStack.length > 0) {
+// 				const activeEffect = activeEffectStack.at(-1)!
+// 				effect.deps.forEach((dep) => {
+// 					dep.add(activeEffect)
+// 					activeEffect.deps.add(dep)
+// 				})
+// 			}
+// 			if (needsUpdate) {
+// 				cachedValue = computeFn()
+// 				needsUpdate = false
+// 			}
+// 			return cachedValue
+// 		},
+// 	}
+// }
