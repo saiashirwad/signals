@@ -1,31 +1,26 @@
 # signals
-
 signals for me and maybe you?
 
-
-## Goals:
 ```typescript
-const countSignal = createSignal(0)
-const nameSignal = createSignal('what')
+import { computed, createEffect, createSignal } from '@texoport/signals'
 
-const Name = Component(function* () {
-    const name = yield* nameSignal
+const count = createSignal(0)
 
-    return yield* html`
-        <div>
-            ${name}
-        </div>
-    `
-})
+setInterval(() => {
+	count.set(count.get() + 1)
+}, 100)
 
-const Something = Component(function* () {
-    const count = yield* countSignal
+const double = computed(() => count.get() * 2)
+const triple = computed(() => count.get() * 3)
 
-    return yield* html`
-        <div>
-            ${count}
-        </div>
-    `
+const more = computed(() => double.get() + triple.get())
+
+createEffect(() => {
+	console.log({
+		count: count.get(),
+		double: double.get(),
+		triple: triple.get(),
+		more: more.get(),
+	})
 })
 ```
- 
