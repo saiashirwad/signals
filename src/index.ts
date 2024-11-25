@@ -158,8 +158,16 @@ export function createSignal<T>(initialValue: T): Signal<T> {
 export function batch(updateFn: () => void) {
 	if (batching) {
 		const prevStack = activeEffectStack
+		/**
+		 * Clear the activeEffectStack so that the effects inside the batch
+		 * do not track dependencies on the signals read inside the batch.
+		 */
 		activeEffectStack = []
 		updateFn()
+		/**
+		 * Restore the activeEffectStack so that the effects outside the batch
+		 * can track dependencies on the signals read inside the batch.
+		 */
 		activeEffectStack = prevStack
 		return
 	}
