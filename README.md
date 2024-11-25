@@ -33,18 +33,8 @@ createEffect(() => {
 
 ## Todo List
 ```typescript
-import { batch, createSignal, computed, createEffect, bind, bindHTML } from '@texoport/signals'
-
-const app = document.querySelector<HTMLDivElement>('#app')!
-app.innerHTML = `
-	<div>
-		<input id="input" placeholder="Enter Todo" />
-		<div id="list"></div>
-	</div>
-`
-
-const input = document.getElementById('input')!
-const todoList = document.getElementById('list')!
+import { batch, createEffect, createSignal } from '@texoport/signals'
+import { bind, bindList } from '@texoport/signals/events'
 
 type Todo = {
 	id: number
@@ -52,27 +42,27 @@ type Todo = {
 	status: boolean
 }
 
-const input$ = createSignal('')
-const todoList$ = createSignal<Todo[]>([])
-let nextId = 0
+function createTodoList(parentElement: Element) {
+	const div = document.createElement('div')
+	const input = document.createElement('input')
+	input.classList.add('p-2', 'border', 'border-gray-300', 'rounded', 'w-full')
+	input.placeholder = 'Enter Todo'
+	const todoList = document.createElement('div')
+	todoList.classList.add('flex', 'flex-col', 'gap-2', 'mt-2')
 
-bind('input', input$, input)
+	const input$ = createSignal('')
+	const todoList$ = createSignal<Todo[]>([])
+	let nextId = 0
 
-bindHTML(todoList, todoList$, (todos) => {
-	const container = document.createElement('div')
+	bind('input', input$, input)
 
-	todos.forEach((todo) => {
-		const todoState$ = computed(() => {
-			const allTodos = todoList$.get()
-			return allTodos.find((t) => t.id === todo.id)!
-		})
-
+	bindList(todoList, todoList$, (todo) => {
 		const todoEl = document.createElement('div')
+		todoEl.classList.add('p-2', 'border', 'border-gray-300', 'rounded')
 
 		createEffect(() => {
-			const currentTodo = todoState$.get()
-			todoEl.innerText = currentTodo.text
-			todoEl.style.textDecoration = currentTodo.status ? 'line-through' : 'none'
+			todoEl.innerText = todo.text
+			todoEl.style.textDecoration = todo.status ? 'line-through' : 'none'
 		})
 
 		todoEl.addEventListener('click', () => {
@@ -83,27 +73,90 @@ bindHTML(todoList, todoList$, (todos) => {
 			todoList$.set(updatedTodos)
 		})
 
-		container.appendChild(todoEl)
+		todoList.appendChild(todoEl)
+
+		return todoEl
 	})
 
-	return container
-})
+	input.addEventListener('keydown', (e) => {
+		if (e.key === 'Enter') {
+			const todos = todoList$.get()
+			batch(() => {
+				todoList$.set([
+					...todos,
+					{ id: nextId++, status: false, text: input$.get() },
+				])
+				input$.set('')
+			})
+		}
+	})
 
-input.addEventListener('keydown', (e) => {
-	if (e.key === 'Enter') {
-		const todos = todoList$.get()
-		batch(() => {
-			todoList$.set([
-				...todos,
-				{
-					id: nextId++,
-					status: false,
-					text: input$.get(),
-				},
-			])
-			input$.set('')
-		})
-	}
-})
+	div.appendChild(input)
+	div.appendChild(todoList)
+	parentElement.appendChild(div)
+}
+
+const app = document.querySelector<HTMLDivElement>('#app')!
+app.classList.add('grid', 'grid-cols-3', 'gap-4', 'p-4')
+for (let i = 0; i < 3; i++) {
+	const div = document.createElement('div')
+	div.classList.add('border', 'border-gray-300', 'rounded', 'p-2')
+	createTodoList(div)
+	app.appendChild(div)
+}
+
+```
+
+# Goals
+
+```typescript
+function Counter() {
+	const count = createSignal(0)
+	return $(
+		"div.flex.gap-2", [
+		$('button.bg-blue-500.text-white.rounded.p-2', { onclick: () => count.set(count.get() + 1) }, '+'),
+		count.get(),
+		$('button.bg-blue-500.text-white.rounded.p-2', { onclick: () => count.set(count.get() - 1) }, '-'),
+	])
+}
+
+type Todo = {
+	id: number
+	text: string
+	status: 'pending' | 'done'
+}
+
+function TodoItem(todo: Todo) {
+	return $(
+		"div.border.border-gray-300.rounded.p-2", [
+		todo.text,
+		$('button.bg-blue-500.text-white.rounded.p-2', { onclick: () => todo.status = 'done' }, 'Done'),
+	])
+}
+
+function TodoList() {
+	const input$ = createSignal('')
+	const todoList$ = createSignal<Todo[]>([])
+
+	return $(
+		"div.flex.flex-col.gap-4", [
+		$('div.text-2xl.font-bold', ['Todo List']),
+		$('input', {
+			oninput: (e) => input$.set(e.target.value),
+			onkeydown: (e) => {
+				if (e.key === 'Enter') {
+					batch(() => {
+						todoList$.update((todos) => [
+							...todos,
+							{ id: nextId++, text: input$.get(), status: 'pending' },
+						])
+						input$.set('')
+					})
+				}
+			},
+		}),
+		todoList$.map((todos) => todos.map(TodoItem)),
+	])
+}
 
 ```

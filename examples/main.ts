@@ -10,8 +10,10 @@ type Todo = {
 function createTodoList(parentElement: Element) {
 	const div = document.createElement('div')
 	const input = document.createElement('input')
+	input.classList.add('p-2', 'border', 'border-gray-300', 'rounded', 'w-full')
 	input.placeholder = 'Enter Todo'
 	const todoList = document.createElement('div')
+	todoList.classList.add('flex', 'flex-col', 'gap-2', 'mt-2')
 
 	const input$ = createSignal('')
 	const todoList$ = createSignal<Todo[]>([])
@@ -21,6 +23,7 @@ function createTodoList(parentElement: Element) {
 
 	bindList(todoList, todoList$, (todo) => {
 		const todoEl = document.createElement('div')
+		todoEl.classList.add('p-2', 'border', 'border-gray-300', 'rounded')
 
 		createEffect(() => {
 			todoEl.innerText = todo.text
@@ -46,11 +49,7 @@ function createTodoList(parentElement: Element) {
 			batch(() => {
 				todoList$.set([
 					...todos,
-					{
-						id: nextId++,
-						status: false,
-						text: input$.get(),
-					},
+					{ id: nextId++, status: false, text: input$.get() },
 				])
 				input$.set('')
 			})
@@ -62,9 +61,20 @@ function createTodoList(parentElement: Element) {
 	parentElement.appendChild(div)
 }
 
+const html = String.raw
+
+const what = html`
+	<div>
+		<div>hi</div>
+		<div>what</div>
+	</div>
+`
+
 const app = document.querySelector<HTMLDivElement>('#app')!
+app.classList.add('grid', 'grid-cols-3', 'gap-4', 'p-4')
 for (let i = 0; i < 3; i++) {
 	const div = document.createElement('div')
+	div.classList.add('border', 'border-gray-300', 'rounded', 'p-2')
 	createTodoList(div)
 	app.appendChild(div)
 }
