@@ -36,32 +36,30 @@ createEffect(() => {
 import { createSignal } from '@texoport/signals'
 import { $ } from '@texoport/signals/dom'
 
+const Button = (
+	text: string | number | Signal<unknown>,
+	onClick: (e: Event) => void,
+): $Element => {
+	return [
+		'button.border.border-gray-300.rounded.p-2',
+		{ click: onClick },
+		[text],
+	]
+}
+
 const Counter = () => {
 	const count$ = createSignal(-2)
 	return $([
 		'div.p-4.flex.gap-4',
 		{},
 		[
-			[
-				'button.border.border-gray-300.rounded.p-2',
-				{
-					click: (e) => {
-						console.log(e)
-						count$.set(count$.get() - 1)
-					},
-				},
-				['-'],
-			],
+			Button('-', (e) => {
+				count$.set(count$.get() - 1)
+			}),
 			['span.p-2', {}, [count$]],
-			[
-				'button.border.border-gray-300.rounded.p-2',
-				{
-					click: (e) => {
-						count$.set(count$.get() + 1)
-					},
-				},
-				['+'],
-			],
+			Button('+', (e) => {
+				count$.set(count$.get() + 1)
+			}),
 		],
 	])
 }

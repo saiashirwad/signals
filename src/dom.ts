@@ -1,12 +1,12 @@
 import { Signal, createEffect } from '.'
 
-type $ = [
+export type $Element = [
 	selector: string,
 	callbacks: Partial<Record<keyof HTMLElementEventMap, (e: Event) => void>>,
-	children?: (string | $ | number | Signal<unknown>)[],
+	children?: (string | $Element | number | Signal<unknown>)[],
 ]
 
-export function $(e: $) {
+export function $(e: $Element) {
 	const [selector, callbacks, children] = e
 	const [tag, ...classes] = selector.split('.')
 	if (!tag) throw new Error('No tag provided')
