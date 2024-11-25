@@ -38,3 +38,7 @@ export function $(e: $Element) {
 	}
 	return element
 }
+
+export function $$(e: $Element) {
+	return e
+}
