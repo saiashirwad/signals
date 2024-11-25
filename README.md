@@ -1,6 +1,11 @@
 # signals
 signals for me and maybe you?
 
+## Installing
+```bash
+bun add @texoport/signals
+```
+
 ## Simple Example
 ```typescript
 import { computed, createEffect, createSignal } from '@texoport/signals'
